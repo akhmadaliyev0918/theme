@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <div class="big-box">
+            <div class="box-up">
+                <div class="theme">
+                    <button id="btnDark" onclick="Light()">
+                        <img id="light_mode" src="/icn/lightmode-white.png">
+                    </button>
+                    <button id="btnLight" onclick="Dark()">
+                        <img id="dark_mode" src="/icn/darkmode-black.png">
+                    </button>
+                </div>
+                <div class="text">
+                    <h1 class="text-p1">Wellcome Back</h1>
+                    <p class="text-p2">We missed you! Login to get Started</p>
+                </div>
+            </div>
+            <div class="box-down">
+                <p class="login">LOGIN</p>
+                <div class="email">
+                    <input class="inpemail" type="email" placeholder="Email">
+                    <img class="user-black" src="/icn/user-black.png" alt="">
+                    <img style="display: none;" class="user-white" src="/icn/user-white.png" alt="">
+                </div>
+                <div class="password">
+                    <input type="password" placeholder="Password">
+                    <img class="lock-black" src="/icn/lock-black.png" alt="">
+                    <img style="display: none;" class="lock-white" src="/icn/lock-white.png" alt="">
+                </div>
+                <div class="remember">
+                    <input type="checkbox">
+                    <p class="remem">Remember Me</p>
+                </div>    
+                <div class="sign">
+                    <h3 class="remem1">Need Help?</h3>
+                    <button class="remem3">Sign In</button>
+                </div>
+                <p class="remem2" style="font-size: 14px;">Don't have an account?  <a style="font-size: 14px;" href="#">Register</a></p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="/main.js"></script>
+</body>
+</html>
