@@ -3,53 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/style.css">
-    <title>Document</title>
+    <title>AI Subtitle Translator to Uzbek</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #00000a;
+            color: #ffffff;
+            font-family: 'Exo 2', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(2px);
+        }
+        .main-container {
+            position: relative;
+            z-index: 1;
+        }
+        .glass-card {
+            background: rgba(10, 5, 25, 0.55);
+            backdrop-filter: blur(15px) saturate(1.8);
+            -webkit-backdrop-filter: blur(15px) saturate(1.8);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(18, 11, 31, 0.37);
+        }
+        .glow-text {
+            text-shadow: 0 0 8px rgba(138, 201, 255, 0.6), 0 0 20px rgba(138, 201, 255, 0.4);
+        }
+        #drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        #drop-zone.dragover {
+            background-color: rgba(138, 201, 255, 0.1);
+            border-color: rgba(138, 201, 255, 0.8);
+        }
+        .glow-button {
+            background: linear-gradient(45deg, #0077be, #00448e);
+            box-shadow: 0 0 15px rgba(0, 119, 190, 0.6), 0 0 25px rgba(0, 119, 190, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 119, 190, 0.8), 0 0 35px rgba(0, 119, 190, 0.6);
+        }
+        .glow-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0077be;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="big-box">
-            <div class="box-up">
-                <div class="theme">
-                    <button id="btnDark" onclick="Light()">
-                        <img id="light_mode" src="/icn/lightmode-white.png">
-                    </button>
-                    <button id="btnLight" onclick="Dark()">
-                        <img id="dark_mode" src="/icn/darkmode-black.png">
-                    </button>
+<body class="w-full h-screen flex items-center justify-center p-4">
+    
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="main-container w-full max-w-xl">
+        <div class="glass-card p-8 md:p-10 text-center">
+            
+            <h1 class="text-3xl md:text-4xl font-bold mb-2 glow-text">
+                Subtitr Tarjimoni
+            </h1>
+            <p class="text-blue-200 font-light mb-6">Fayllarni o'zbek tiliga Gemini AI yordamida tarjima qiling</p>
+
+            <div id="drop-zone" class="p-8 text-center cursor-pointer">
+                <input type="file" id="file-input" class="hidden" accept=".vtt,.srt">
+                <div id="upload-prompt">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p class="mt-2 text-gray-300">Faylni shu yerga tashlang yoki tanlash uchun bosing</p>
+                    <p class="text-xs text-gray-500">.VTT yoki .SRT formatidagi fayllar</p>
                 </div>
-                <div class="text">
-                    <h1 class="text-p1">Wellcome Back</h1>
-                    <p class="text-p2">We missed you! Login to get Started</p>
+                <div id="file-info" class="hidden flex items-center justify-center flex-col">
+                   <p id="file-name" class="font-semibold text-blue-200"></p>
+                   <button id="remove-file-btn" class="mt-2 text-sm text-red-400 hover:text-red-300">O'chirish</button>
                 </div>
             </div>
-            <div class="box-down">
-                <p class="login">LOGIN</p>
-                <div class="email">
-                    <input class="inpemail" type="email" placeholder="Email">
-                    <img class="user-black" src="/icn/user-black.png" alt="">
-                    <img style="display: none;" class="user-white" src="/icn/user-white.png" alt="">
-                </div>
-                <div class="password">
-                    <input type="password" placeholder="Password">
-                    <img class="lock-black" src="/icn/lock-black.png" alt="">
-                    <img style="display: none;" class="lock-white" src="/icn/lock-white.png" alt="">
-                </div>
-                <div class="remember">
-                    <input type="checkbox">
-                    <p class="remem">Remember Me</p>
-                </div>    
-                <div class="sign">
-                    <h3 class="remem1">Need Help?</h3>
-                    <button class="remem3">Sign In</button>
-                </div>
-                <p class="remem2" style="font-size: 14px;">Don't have an account?  <a style="font-size: 14px;" href="#">Register</a></p>
+            
+            <div id="status-area" class="mt-4 h-12 flex items-center justify-center">
+                   <div id="loader" class="hidden loader"></div>
+                   <p id="status-text" class="text-blue-200"></p>
             </div>
+            
+            <button id="translate-btn" class="glow-button w-full text-white font-semibold py-3 px-8 rounded-full shadow-lg" disabled>
+                Tarjima qilish
+            </button>
+            <a id="download-btn" class="glow-button w-full text-white font-semibold py-3 px-8 rounded-full shadow-lg mt-4 hidden text-center" href="#">
+                Yuklab olish
+            </a>
         </div>
     </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- State Management ---
+        let selectedFile = null;
+        let fileContent = '';
+        let fileType = '';
+        let translatedContent = '';
 
+        // --- DOM Elements ---
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const fileInfo = document.getElementById('file-info');
+        const fileNameEl = document.getElementById('file-name');
+        const removeFileBtn = document.getElementById('remove-file-btn');
+        const translateBtn = document.getElementById('translate-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const loader = document.getElementById('loader');
+        const statusText = document.getElementById('status-text');
 
+        // --- File Upload Logic ---
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
 
-    <script src="/main.js"></script>
+        function handleFile(file) {
+            if (file.name.endsWith('.vtt') || file.name.endsWith('.srt')) {
+                selectedFile = file;
+                fileNameEl.textContent = file.name;
+                fileType = file.name.endsWith('.vtt') ? 'vtt' : 'srt';
+                
+                uploadPrompt.classList.add('hidden');
+                fileInfo.classList.remove('hidden');
+                translateBtn.disabled = false;
+                downloadBtn.classList.add('hidden');
+                statusText.textContent = 'Fayl tarjimaga tayyor.';
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileContent = e.target.result;
+                };
+                reader.readAsText(file);
+            } else {
+                statusText.textContent = "Noto'g'ri format. .vtt yoki .srt fayl yuklang.";
+                selectedFile = null;
+            }
+        }
+        
+        removeFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedFile = null;
+            fileContent = '';
+            fileInput.value = ''; // Clear input
+            uploadPrompt.classList.remove('hidden');
+            fileInfo.classList.add('hidden');
+            translateBtn.disabled = true;
+            downloadBtn.classList.add('hidden');
+            statusText.textContent = "";
+        });
+
+        // --- Subtitle Parsing and Reconstructing ---
+        function parseSubtitles(content, type) {
+            const cues = [];
+            const textToTranslate = [];
+            // VTT files often start with WEBVTT, which should be preserved.
+            let header = '';
+            if (type === 'vtt' && content.startsWith('WEBVTT')) {
+                header = 'WEBVTT\n\n';
+                content = content.substring('WEBVTT'.length).trim();
+            }
+
+            const blocks = content.split(/\n\s*\n/);
+            blocks.forEach(block => {
+                if (block.trim() === '') return;
+
+                const lines = block.split('\n');
+                const cue = { pre: [], text: [], post: [] };
+                let isText = false;
+                
+                // Heuristic to find the start of the text content
+                // It's usually after the line with '-->'
+                for(let i=0; i<lines.length; i++) {
+                   if (lines[i].includes('-->')) {
+                       isText = true;
+                       cue.pre.push(lines[i]);
+                       continue;
+                   }
+
+                   if(isText) {
+                       cue.text.push(lines[i]);
+                       textToTranslate.push(lines[i]);
+                   } else {
+                       cue.pre.push(lines[i]);
+                   }
+                }
+                cues.push(cue);
+            });
+            return { cues, textToTranslate, header };
+        }
+
+        function reconstructSubtitles(cues, translatedText, header) {
+            let textIndex = 0;
+            const reconstructedBlocks = cues.map(cue => {
+                const pre = cue.pre.join('\n');
+                // Ensure we don't go out of bounds for translatedText
+                const translated = cue.text.map(() => {
+                    const translatedLine = translatedText[textIndex];
+                    textIndex++; // Increment for the next line
+                    return translatedLine !== undefined ? translatedLine : ''; // Handle potential missing translations
+                }).join('\n');
+                return `${pre}\n${translated}`;
+            });
+            return header + reconstructedBlocks.join('\n\n');
+        }
+
+        // --- Gemini API Call ---
+        async function callGeminiForTranslation(texts) {
+            const prompt = `You are an expert subtitle translator. Translate the following subtitle lines into modern, natural Uzbek. Return ONLY the translated lines, each on a new line, in the same order as the input. Do not add any extra text, numbers, or explanations.
+
+Input Lines:
+---
+${texts.join('\n')}
+---
+`;
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            
+            // IMPORTANT: Replace "YOUR_GEMINI_API_KEY" with your actual Gemini API Key
+            // You can obtain one from https://ai.google.dev/
+            // If running this code in a Canvas environment (like the one provided by Gemini),
+            // you might leave apiKey as "" if the environment injects it automatically.
+            // For local execution, it MUST be your actual key.
+            const apiKey = "AIzaSyBLJ3Cv4pZMRrZAlS5kFP8G5cVx3hWpufU"; // <<--- BU YERGA O'ZINGIZNING API KALITINGIZNI KIRITING!
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                // More detailed error logging
+                const errorData = await response.json();
+                console.error("API Error Response:", errorData);
+                throw new Error(`API xatosi: ${response.status} - ${errorData.error ? errorData.error.message : response.statusText}`);
+            }
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                const translatedText = result.candidates[0].content.parts[0].text;
+                return translatedText.split('\n');
+            } else {
+                throw new Error("API'dan kutilmagan javob tuzilishi.");
+            }
+        }
+
+        // --- Main Translation Logic ---
+        translateBtn.addEventListener('click', async () => {
+            if (!selectedFile || !fileContent) return;
+
+            translateBtn.disabled = true;
+            loader.classList.remove('hidden');
+            statusText.textContent = "Subtitrlar tahlil qilinmoqda...";
+
+            try {
+                const { cues, textToTranslate, header } = parseSubtitles(fileContent, fileType);
+                
+                if (textToTranslate.length === 0) {
+                   throw new Error("Faylda tarjima uchun matn topilmadi.");
+                }
+
+                const allTranslated = [];
+                const chunkSize = 50; // Translate in chunks of 50 lines to avoid exceeding API limits
+                for (let i = 0; i < textToTranslate.length; i += chunkSize) {
+                    const chunk = textToTranslate.slice(i, i + chunkSize);
+                    statusText.textContent = `Tarjima qilinmoqda... (${Math.min(i + chunkSize, textToTranslate.length)}/${textToTranslate.length})`;
+                    const translatedChunk = await callGeminiForTranslation(chunk);
+                    
+                    // Simple validation: if the number of lines doesn't match, log a warning
+                    if (translatedChunk.length !== chunk.length) {
+                        console.warn(`Tarjima qilingan qismdagi qatorlar soni kirish qismiga mos kelmadi. Kutilgan: ${chunk.length}, Olingan: ${translatedChunk.length}`);
+                        // If there's a mismatch, try to align them as best as possible
+                        // For example, if translatedChunk has fewer lines, fill with empty strings.
+                        // If it has more, just take the first 'chunk.length' lines.
+                        while(translatedChunk.length < chunk.length) translatedChunk.push('');
+                        translatedChunk.splice(chunk.length); // Trim excess if more lines returned
+                    }
+                    allTranslated.push(...translatedChunk);
+                }
+
+                statusText.textContent = "Tarjima yakunlandi. Fayl yaratilmoqda...";
+                translatedContent = reconstructSubtitles(cues, allTranslated, header);
+                
+                const blob = new Blob([translatedContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                downloadBtn.href = url;
+                const originalName = selectedFile.name.replace(/\.(vtt|srt)$/, '');
+                downloadBtn.download = `${originalName}.uz.${fileType}`;
+                
+                downloadBtn.classList.remove('hidden');
+                statusText.textContent = "Tayyor! Faylni yuklab oling.";
+
+            } catch (error) {
+                console.error("Translation Error:", error);
+                statusText.textContent = `Xatolik yuz berdi: ${error.message}`;
+            } finally {
+                loader.classList.add('hidden');
+                translateBtn.disabled = false;
+            }
+        });
+
+        // --- Three.js Background Animation ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#bg-canvas'), antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.position.z = 5;
+
+        const starVertices = [];
+        for (let i = 0; i < 10000; i++) {
+            const x = THREE.MathUtils.randFloatSpread(1000);
+            const y = THREE.MathUtils.randFloatSpread(1000);
+            const z = THREE.MathUtils.randFloatSpread(1000);
+            starVertices.push(x, y, z);
+        }
+        const starGeometry = new THREE.BufferGeometry();
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0x8ac9ff, size: 0.5, transparent: true, opacity: 0.8 });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            stars.rotation.x += 0.00005 * clock.getDelta();
+            stars.rotation.y += 0.0001 * clock.getDelta();
+            renderer.render(scene, camera);
+        }
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }, false);
+        // Start the animation on window load.
+        window.onload = function () {
+            animate();
+        }
+    </script>
 </body>
 </html>
